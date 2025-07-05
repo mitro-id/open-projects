@@ -1,0 +1,1 @@
+{"frames":[{"func":"lines(x, regress(t[[1]], t[[2]]) %*% t(y), col = \"green\")","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0}],"message":"Ошибка: объект 'x' не найден\n"}

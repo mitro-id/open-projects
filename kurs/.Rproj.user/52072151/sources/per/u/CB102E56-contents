@@ -1,0 +1,70 @@
+install.packages("readxl")
+library(readxl)
+
+tab <- data.frame(read_excel("Образование result2022.xlsx"))
+
+#first addiction. mean score
+mean_score_table <- tab[c(2, 7:9)]
+names(mean_score_table)[2] = "main"
+names(mean_score_table)[3] = "target"
+names(mean_score_table)[4] = "paid"
+
+mean_values_main <- mean_score_table[mean_score_table[["main"]] != 0, ]
+mean_values_main <- tapply(mean_values_main$main, mean_values_main$Region, mean)
+mean_values_target <- mean_score_table[mean_score_table[["target"]] != 0, ]
+mean_values_target <- tapply(mean_values_target$target, mean_values_target$Region, mean)
+mean_values_paid <- mean_score_table[mean_score_table[["paid"]] != 0, ]
+mean_values_paid <- tapply(mean_values_paid$paid, mean_values_paid$Region, mean)
+
+barplot(mean_values_main, xlab = "Region", ylab = "main score", main = "mean score in regions(main)", col = "yellow")
+barplot(mean_values_target, xlab = "Region", ylab = "main score", main = "mean score in regions(target)", col = "red")
+barplot(mean_values_paid, xlab = "Region", ylab = "main score", main = "mean score in regions(paid)", col = "green")
+
+sorted_main = names(mean_values_main[order(mean_values_main, decreasing = T)])       #
+sorted_target = names(mean_values_target[order(mean_values_target, decreasing = T)]) # Rating of Regions
+sorted_paid = names(mean_values_paid[order(mean_values_paid, decreasing = T)])       #
+
+rating = data.frame("main" = c(sorted_target, NA, NA), "target" = c(sorted_target, NA, NA), "paid" = sorted_paid)
+print(head(rating))
+print(tail(rating))
+
+#functions
+polinom <- function(data_x, data_y){
+  x = matrix(c(rep(1, length(data_x)), data_x), ncol = 2)
+  y = matrix(data_y, ncol = 1)
+  a1 <- t(x) %*% y
+  a2 <- solve(t(x) %*% x)
+  w = t(a1) %*% a2
+}
+
+graph <- function(ind1, ind2, xl = "x", yl = "y", xli = NULL, yli = NULL){
+  t = tab[c(ind1, ind2)]
+  t = t[t[[1]] != 0, ]
+  t = t[t[[2]] != 0, ]
+  t <- lapply(t, log)
+  plot(t[[1]], t[[2]],
+       xlab = xl,
+       ylab = yl,
+       xlim = xli,
+       ylim = yli)
+  x = seq(min(t[[1]]), max(t[[1]]) + 1, 0.1)
+  y = matrix(c(rep(1, length(x)), x), ncol = 2)
+  lines(x, polinom(t[[1]], t[[2]]) %*% t(y), col = "green")
+}
+
+#second addiction. the ratio of non-degree academic staff under 40 years of age to the income of universities from scientific articles
+graph(34, 131, "no_degree", "share of revenue from research and development")
+
+#third addition. the ratio of the average EGE score and university sponsorship from foreign sources
+graph(7, 112, "mean_score", "sponsorship")
+names(tab[112])
+
+#fourth addition. Do universities with high salaries attract stronger applicants?
+graph(7, 102, "salary", "mean_score")
+
+#fifth addition. Dependence of sports infrastructure on the number of students
+graph(70, 119, "number_of_students", "area")
+
+#end of work
+
+names(tab[119])
